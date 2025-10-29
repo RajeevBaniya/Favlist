@@ -1,0 +1,93 @@
+[
+  {
+    "title": "Inception",
+    "type": "MOVIE",
+    "director": "Christopher Nolan",
+    "budget": "$160 million",
+    "location": "Los Angeles, Paris, Tokyo",
+    "duration": "148 min",
+    "yearTime": "2010"
+  },
+  {
+    "title": "The Dark Knight",
+    "type": "MOVIE",
+    "director": "Christopher Nolan",
+    "budget": "$185 million",
+    "location": "Chicago, Hong Kong",
+    "duration": "152 min",
+    "yearTime": "2008"
+  },
+  {
+    "title": "Breaking Bad",
+    "type": "TV_SHOW",
+    "director": "Vince Gilligan",
+    "budget": "$3 million per episode",
+    "location": "Albuquerque, New Mexico",
+    "duration": "49 min/episode",
+    "yearTime": "2008-2013"
+  },
+  {
+    "title": "Stranger Things",
+    "type": "TV_SHOW",
+    "director": "The Duffer Brothers",
+    "budget": "$8 million per episode",
+    "location": "Atlanta, Georgia",
+    "duration": "50 min/episode",
+    "yearTime": "2016-present"
+  },
+  {
+    "title": "The Shawshank Redemption",
+    "type": "MOVIE",
+    "director": "Frank Darabont",
+    "budget": "$25 million",
+    "location": "Ohio, USA",
+    "duration": "142 min",
+    "yearTime": "1994"
+  },
+  {
+    "title": "Game of Thrones",
+    "type": "TV_SHOW",
+    "director": "David Benioff & D.B. Weiss",
+    "budget": "$15 million per episode",
+    "location": "Northern Ireland, Croatia, Iceland",
+    "duration": "57 min/episode",
+    "yearTime": "2011-2019"
+  },
+  {
+    "title": "Pulp Fiction",
+    "type": "MOVIE",
+    "director": "Quentin Tarantino",
+    "budget": "$8.5 million",
+    "location": "Los Angeles, California",
+    "duration": "154 min",
+    "yearTime": "1994"
+  },
+  {
+    "title": "The Office",
+    "type": "TV_SHOW",
+    "director": "Greg Daniels",
+    "budget": "$1 million per episode",
+    "location": "Los Angeles, California",
+    "duration": "22 min/episode",
+    "yearTime": "2005-2013"
+  },
+  {
+    "title": "Interstellar",
+    "type": "MOVIE",
+    "director": "Christopher Nolan",
+    "budget": "$165 million",
+    "location": "Alberta, Canada; Iceland",
+    "duration": "169 min",
+    "yearTime": "2014"
+  },
+  {
+    "title": "Friends",
+    "type": "TV_SHOW",
+    "director": "David Crane & Marta Kauffman",
+    "budget": "$10 million per episode",
+    "location": "New York City, USA",
+    "duration": "22 min/episode",
+    "yearTime": "1994-2004"
+  }
+]
+
