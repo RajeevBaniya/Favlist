@@ -1,0 +1,52 @@
+// Prisma schema for Favlist application
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Entry {
+  id        String   @id @default(uuid())
+  title     String   @db.VarChar(255)
+  type      EntryType
+  director  String   @db.VarChar(255)
+  budget    String   @db.VarChar(100)
+  location  String   @db.VarChar(255)
+  duration  String   @db.VarChar(100)
+  yearTime  String   @db.VarChar(100) @map("year_time")
+  posterUrl String?  @db.VarChar(500) @map("poster_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Optional owner; existing seed data remains valid without a user
+  userId    String?  @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@map("entries")
+  @@index([createdAt(sort: Desc)])
+  @@index([userId])
+}
+
+enum EntryType {
+  MOVIE
+  TV_SHOW
+}
+
+model User {
+  id         String   @id @default(uuid())
+  email      String   @unique @db.VarChar(255)
+  password   String   @db.VarChar(255) // bcrypt hash
+  name       String?  @db.VarChar(255)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  entries    Entry[]
+
+  @@map("users")
+  @@index([createdAt(sort: Desc)])
+}
+
