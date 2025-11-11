@@ -3,6 +3,8 @@ import type { Entry, CreateEntryInput } from '../../types';
 import { FormInput } from '@/components/ui/form-input';
 import { FormSelect } from '@/components/ui/form-select';
 import { Button } from '@/components/ui/button';
+import { validateEntryForm, isValidForm } from '../../utils/validation';
+import { createInitialFormData, createFieldChangeHandler } from '../../utils/form';
 
 interface EntryFormProps {
   entry?: Entry;
@@ -10,35 +12,18 @@ interface EntryFormProps {
   onCancel: () => void;
 }
 
-export const EntryForm = ({ entry, onSubmit, onCancel }: EntryFormProps) => {
-  const [formData, setFormData] = useState<CreateEntryInput>({
-    title: entry?.title || '',
-    type: entry?.type || 'MOVIE',
-    director: entry?.director || '',
-    budget: entry?.budget || '',
-    location: entry?.location || '',
-    duration: entry?.duration || '',
-    yearTime: entry?.yearTime || '',
-    posterUrl: entry?.posterUrl || '',
-  });
-
+const EntryForm = ({ entry, onSubmit, onCancel }: EntryFormProps) => {
+  const [formData, setFormData] = useState<CreateEntryInput>(
+    createInitialFormData(entry)
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const validate = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.title.trim()) newErrors.title = 'Title is required';
-    if (!formData.type) newErrors.type = 'Type is required';
-    if (!formData.director.trim()) newErrors.director = 'Director is required';
-    if (!formData.budget.trim()) newErrors.budget = 'Budget is required';
-    if (!formData.location.trim()) newErrors.location = 'Location is required';
-    if (!formData.duration.trim()) newErrors.duration = 'Duration is required';
-    if (!formData.yearTime.trim()) newErrors.yearTime = 'Year/Time is required';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const validationErrors = validateEntryForm(formData);
+    setErrors(validationErrors);
+    return isValidForm(validationErrors);
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -57,15 +42,12 @@ export const EntryForm = ({ entry, onSubmit, onCancel }: EntryFormProps) => {
     }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
-  };
+  const handleChange = createFieldChangeHandler(
+    formData,
+    errors,
+    setFormData,
+    setErrors
+  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -168,4 +150,9 @@ export const EntryForm = ({ entry, onSubmit, onCancel }: EntryFormProps) => {
     </form>
   );
 };
+
+// Export both named and default for compatibility
+export { EntryForm };
+
+export default EntryForm;
 

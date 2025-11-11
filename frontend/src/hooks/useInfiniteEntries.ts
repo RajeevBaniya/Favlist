@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { apiClient } from '../api/client';
+import { getEntries } from '../api/client';
 import type { Entry } from '../types';
 
 interface UseInfiniteEntriesOptions {
@@ -25,7 +25,7 @@ export const useInfiniteEntries = (options?: UseInfiniteEntriesOptions) => {
 
     try {
       const filterType = type === 'ALL' ? undefined : type;
-      const response = await apiClient.getEntries(
+      const response = await getEntries(
         20, 
         nextPageToken || undefined,
         search,
@@ -51,7 +51,7 @@ export const useInfiniteEntries = (options?: UseInfiniteEntriesOptions) => {
 
     try {
       const filterType = type === 'ALL' ? undefined : type;
-      const response = await apiClient.getEntries(20, undefined, search, filterType);
+      const response = await getEntries(20, undefined, search, filterType);
       setEntries(response.data);
       setNextPageToken(response.pagination.nextPageToken);
       setHasMore(response.pagination.hasMore);

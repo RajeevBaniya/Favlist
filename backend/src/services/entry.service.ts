@@ -4,100 +4,108 @@ import type { PaginatedResponse } from '../types/index.js';
 import { DEFAULT_PAGE_LIMIT } from '../utils/constants.js';
 import type { Entry } from '@prisma/client';
 
-export class EntryService {
-  async createEntry(data: CreateEntryInput): Promise<Entry> {
-    return await prisma.entry.create({
-      data,
-    });
-  }
-
-  async getEntries(
-    limit: number = DEFAULT_PAGE_LIMIT, 
-    pageToken?: string,
-    searchQuery?: string,
-    filterType?: 'MOVIE' | 'TV_SHOW'
-  ): Promise<PaginatedResponse<Entry>> {
-    const take = Math.min(limit, 100);
-
-    const whereClause: any = {};
-
-    console.log('Service received:', { searchQuery, filterType, limit, pageToken });
-
-    // Add search filter
-    if (searchQuery && searchQuery.trim()) {
-      console.log('Adding search filter for:', searchQuery);
-      whereClause.OR = [
+// Pure utility functions
+const buildSearchFilter = (searchQuery?: string) => {
+  if (!searchQuery?.trim()) return {};
+  
+  return {
+    OR: [
         { title: { contains: searchQuery } },
         { director: { contains: searchQuery } },
         { location: { contains: searchQuery } },
-      ];
-    }
+    ],
+  };
+};
 
-    // Add type filter
-    if (filterType) {
-      whereClause.type = filterType;
-    }
+const buildTypeFilter = (filterType?: 'MOVIE' | 'TV_SHOW') => 
+  filterType ? { type: filterType } : {};
 
-    const entries = await prisma.entry.findMany({
-      where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
-      take: take + 1,
-      ...(pageToken && {
-        skip: 1,
-        cursor: {
-          id: pageToken,
-        },
-      }),
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+const buildWhereClause = (searchQuery?: string, filterType?: 'MOVIE' | 'TV_SHOW') => {
+  const searchFilter = buildSearchFilter(searchQuery);
+  const typeFilter = buildTypeFilter(filterType);
+  
+  const whereClause = { ...searchFilter, ...typeFilter };
+  return Object.keys(whereClause).length > 0 ? whereClause : undefined;
+};
 
+const buildPaginationResponse = <T>(entries: T[], take: number): PaginatedResponse<T> => {
     const hasMore = entries.length > take;
     const data = hasMore ? entries.slice(0, -1) : entries;
-    const nextPageToken = hasMore ? data[data.length - 1].id : null;
+  const nextPageToken = hasMore && data.length > 0 ? (data[data.length - 1] as any).id : null;
 
     return {
       data,
       nextPageToken,
       hasMore,
     };
-  }
+};
 
-  async getEntryById(id: string): Promise<Entry | null> {
-    return await prisma.entry.findUnique({
-      where: { id },
+// Pure service functions
+const createEntry = async (data: CreateEntryInput): Promise<Entry> => 
+  prisma.entry.create({ data });
+
+const getEntries = async (
+  limit: number = DEFAULT_PAGE_LIMIT, 
+  pageToken?: string,
+  searchQuery?: string,
+  filterType?: 'MOVIE' | 'TV_SHOW'
+): Promise<PaginatedResponse<Entry>> => {
+  const take = Math.min(limit, 100);
+  const whereClause = buildWhereClause(searchQuery, filterType);
+
+  console.log('Service received:', { searchQuery, filterType, limit, pageToken });
+
+  const entries = await prisma.entry.findMany({
+    where: whereClause,
+    take: take + 1,
+    ...(pageToken && {
+      skip: 1,
+      cursor: { id: pageToken },
+    }),
+    orderBy: { createdAt: 'desc' },
     });
-  }
 
-  async updateEntry(id: string, data: UpdateEntryInput): Promise<Entry> {
-    return await prisma.entry.update({
-      where: { id },
-      data,
-    });
-  }
+  return buildPaginationResponse(entries, take);
+};
 
-  async deleteEntry(id: string): Promise<Entry> {
-    return await prisma.entry.delete({
-      where: { id },
-    });
-  }
+const getEntryById = async (id: string): Promise<Entry | null> =>
+  prisma.entry.findUnique({ where: { id } });
 
-  async searchEntries(query: string, limit: number = DEFAULT_PAGE_LIMIT): Promise<Entry[]> {
-    return await prisma.entry.findMany({
-      where: {
-        OR: [
-          { title: { contains: query } },
-          { director: { contains: query } },
-          { location: { contains: query } },
-        ],
-      },
+const updateEntry = async (id: string, data: UpdateEntryInput): Promise<Entry> =>
+  prisma.entry.update({ where: { id }, data });
+
+const deleteEntry = async (id: string): Promise<Entry> =>
+  prisma.entry.delete({ where: { id } });
+
+const searchEntries = async (query: string, limit: number = DEFAULT_PAGE_LIMIT): Promise<Entry[]> => {
+  const whereClause = buildSearchFilter(query);
+  
+  return prisma.entry.findMany({
+    where: whereClause,
       take: limit,
-      orderBy: {
-        createdAt: 'desc',
-      },
+    orderBy: { createdAt: 'desc' },
     });
-  }
-}
+};
 
-export const entryService = new EntryService();
+// Export individual functions
+export { 
+  createEntry, 
+  getEntries, 
+  getEntryById, 
+  updateEntry, 
+  deleteEntry, 
+  searchEntries 
+};
+
+// Default export object for backward compatibility
+const entryService = {
+  createEntry,
+  getEntries,
+  getEntryById,
+  updateEntry,
+  deleteEntry,
+  searchEntries,
+};
+
+export default entryService;
 

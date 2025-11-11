@@ -51,8 +51,27 @@ export const authClient = {
   },
 
   me: async (): Promise<User> => {
-    const response = await authApi.get<AuthResponse>('/me');
-    return response.data.data;
+    // Use native fetch to avoid browser logging 401 as error
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    // Functionally handle non-authenticated state
+    if (response.status === 401) {
+      throw new Error('Not authenticated');
+    }
+    
+    // Parse and return user data
+    if (response.ok) {
+      const data: AuthResponse = await response.json();
+      return data.data;
+    }
+    
+    throw new Error('Failed to fetch user data');
   },
 };
 

@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useInfiniteEntries } from '../hooks/useInfiniteEntries';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { useDebounce } from '../hooks/useDebounce';
-import { apiClient } from '../api/client';
+import { createEntry, updateEntry, deleteEntry } from '../api/client';
 import { EntriesTable } from '../components/Table/EntriesTable';
 import {
   Dialog,
@@ -45,14 +45,14 @@ export const Home = () => {
   };
 
   const handleAdd = async (data: CreateEntryInput) => {
-    await apiClient.createEntry(data);
+    await createEntry(data);
     setIsAddModalOpen(false);
     refresh();
   };
 
   const handleEdit = async (data: CreateEntryInput) => {
     if (!selectedEntry) return;
-    await apiClient.updateEntry(selectedEntry.id, data);
+    await updateEntry(selectedEntry.id, data);
     setIsEditModalOpen(false);
     setSelectedEntry(null);
     refresh();
@@ -62,7 +62,7 @@ export const Home = () => {
     if (!selectedEntry) return;
     setDeleteLoading(true);
     try {
-      await apiClient.deleteEntry(selectedEntry.id);
+      await deleteEntry(selectedEntry.id);
       setIsDeleteModalOpen(false);
       setSelectedEntry(null);
       refresh();

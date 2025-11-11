@@ -17,7 +17,6 @@ FavList for managing your favorite movies and TV shows Built with React, TypeScr
 - Prisma ORM
 - MySQL
 - JWT authentication
-- Zod validation
 
 ## Project Structure
 
@@ -29,7 +28,7 @@ favlist/
 │   │   ├── services/       # Business logic
 │   │   ├── routes/         # API routes
 │   │   ├── middlewares/    # Auth, validation, error handling
-│   │   ├── schemas/        # Zod validation schemas
+│   │   ├── schemas/        # validation schemas
 │   │   ├── db/             # Database client and seed data
 │   │   └── utils/          # Utilities (JWT, logger, constants)
 │   └── prisma/             # Database schema
@@ -78,9 +77,8 @@ npm install
 Create a `.env` file in the `backend` directory:
 
 ```env
-DATABASE_URL="mysql://user:password@localhost:3306/favlist"
+DATABASE_URL="you_mysql_details"
 JWT_SECRET="your-secret-key-here"
-NODE_ENV="development"
 PORT=4000
 FRONTEND_URL="http://localhost:5173"
 ```
@@ -103,12 +101,6 @@ npm run db:seed
 ```bash
 cd frontend
 npm install
-```
-
-Create a `.env` file in the `frontend` directory (optional):
-
-```env
-VITE_API_BASE_URL=http://localhost:4000/api
 ```
 
 ## Running the Application
@@ -169,7 +161,4 @@ npm run preview
 - **User**: id, email, password, name, createdAt, updatedAt
 - **Entry**: id, title, type (MOVIE/TV_SHOW), director, budget, location, duration, yearTime, posterUrl, userId, createdAt, updatedAt
 
-## License
-
-ISC
 

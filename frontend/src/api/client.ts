@@ -9,87 +9,123 @@ import type {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
 
-class ApiClient {
-  private baseUrl: string;
+// Pure utility functions
+const buildUrl = (baseUrl: string, endpoint: string): string => 
+  `${baseUrl}${endpoint}`;
 
-  constructor(baseUrl: string) {
-    this.baseUrl = baseUrl;
-  }
-
-  private async request<T>(
-    endpoint: string,
-    options?: RequestInit
-  ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
+const buildHeaders = (additionalHeaders?: HeadersInit): HeadersInit => ({
+  'Content-Type': 'application/json',
+  ...additionalHeaders,
+});
     
-    const response = await fetch(url, {
+const buildRequestOptions = (options?: RequestInit): RequestInit => ({
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
+  headers: buildHeaders(options?.headers),
     });
 
-    if (!response.ok) {
+const handleApiError = async (response: Response): Promise<never> => {
       const error: ApiError = await response.json();
       throw new Error(error.error || 'An error occurred');
-    }
+};
 
-    return response.json();
+const buildSearchParams = (params: Record<string, string | number | undefined>): string => {
+  const searchParams = new URLSearchParams();
+  
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined) {
+      searchParams.append(key, value.toString());
+    }
+  });
+  
+  return searchParams.toString();
+};
+
+// Core request function
+const apiRequest = async <T>(
+  endpoint: string,
+  options?: RequestInit,
+  baseUrl: string = API_BASE_URL
+): Promise<T> => {
+  const url = buildUrl(baseUrl, endpoint);
+  const requestOptions = buildRequestOptions(options);
+  
+  const response = await fetch(url, requestOptions);
+
+  if (!response.ok) {
+    await handleApiError(response);
   }
 
-  async getEntries(
+  return response.json();
+};
+
+// Pure API functions
+const getEntries = async (
     limit: number = 20,
     pageToken?: string,
     search?: string,
     type?: 'MOVIE' | 'TV_SHOW'
-  ): Promise<PaginatedResponse<Entry>> {
-    const params = new URLSearchParams({
-      limit: limit.toString(),
-      ...(pageToken && { pageToken }),
-      ...(search && { search }),
-      ...(type && { type }),
+): Promise<PaginatedResponse<Entry>> => {
+  const params = buildSearchParams({
+    limit,
+    pageToken,
+    search,
+    type,
     });
 
-    return this.request<PaginatedResponse<Entry>>(
-      `/entries?${params.toString()}`
+  return apiRequest<PaginatedResponse<Entry>>(
+    `/entries?${params}`
     );
-  }
+};
 
-  async getEntryById(id: string): Promise<ApiResponse<Entry>> {
-    return this.request<ApiResponse<Entry>>(`/entries/${id}`);
-  }
+const getEntryById = async (id: string): Promise<ApiResponse<Entry>> =>
+  apiRequest<ApiResponse<Entry>>(`/entries/${id}`);
 
-  async createEntry(data: CreateEntryInput): Promise<ApiResponse<Entry>> {
-    return this.request<ApiResponse<Entry>>('/entries', {
+const createEntry = async (data: CreateEntryInput): Promise<ApiResponse<Entry>> =>
+  apiRequest<ApiResponse<Entry>>('/entries', {
       method: 'POST',
       body: JSON.stringify(data),
     });
-  }
 
-  async updateEntry(
+const updateEntry = async (
     id: string,
     data: UpdateEntryInput
-  ): Promise<ApiResponse<Entry>> {
-    return this.request<ApiResponse<Entry>>(`/entries/${id}`, {
+): Promise<ApiResponse<Entry>> =>
+  apiRequest<ApiResponse<Entry>>(`/entries/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
-  }
 
-  async deleteEntry(id: string): Promise<ApiResponse<{ message: string }>> {
-    return this.request<ApiResponse<{ message: string }>>(`/entries/${id}`, {
+const deleteEntry = async (id: string): Promise<ApiResponse<{ message: string }>> =>
+  apiRequest<ApiResponse<{ message: string }>>(`/entries/${id}`, {
       method: 'DELETE',
     });
-  }
 
-  async searchEntries(query: string): Promise<PaginatedResponse<Entry>> {
-    const params = new URLSearchParams({ q: query });
-    return this.request<PaginatedResponse<Entry>>(
-      `/entries/search?${params.toString()}`
-    );
-  }
-}
+const searchEntries = async (query: string): Promise<PaginatedResponse<Entry>> => {
+  const params = buildSearchParams({ q: query });
+  return apiRequest<PaginatedResponse<Entry>>(
+    `/entries/search?${params}`
+  );
+};
 
-export const apiClient = new ApiClient(API_BASE_URL);
+// Export individual functions
+export { 
+  getEntries, 
+  getEntryById, 
+  createEntry, 
+  updateEntry, 
+  deleteEntry, 
+  searchEntries 
+};
+
+// Default export object for backward compatibility
+const apiClient = {
+  getEntries,
+  getEntryById,
+  createEntry,
+  updateEntry,
+  deleteEntry,
+  searchEntries,
+};
+
+export default apiClient;
 
